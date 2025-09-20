@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: ../../fastapi-demo
+      dockerfile: Dockerfile
+    env_file:
+      - ../../.env
+    ports:
+      - "${FASTAPI_PORT:-8000}:8000"
+    # volumes:
+    #   - ../../fastapi-demo:/app

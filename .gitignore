@@ -1,0 +1,58 @@
+# --- Python artifacts ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# --- Virtual environments ---
+.venv/
+*/.venv/
+env/
+venv/
+
+# --- Distribution / packaging ---
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# --- Django specific ---
+*.log
+db.sqlite3
+/media/
+/staticfiles/
+/static/
+
+# --- Flask / FastAPI (runtime files) ---
+instance/
+*.db
+
+# --- Docker ---
+**/Dockerfile.stable
+**/Dockerfile.offline
+docker/*/compose.stable.yml
+docker/*/compose.offline.yml
+
+# --- Environment / secrets ---
+.env
+.env.local
+.env.*.local
+.envrc
+
+# --- Caches (for offline builds) ---
+caches/
+wheels/
+.cache/
+pip-wheel-metadata/
+
+# --- IDEs / editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db

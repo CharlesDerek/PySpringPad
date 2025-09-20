@@ -1,0 +1,10 @@
+services:
+  web:
+    build:
+      context: ../../django-demo
+    env_file:
+      - ../../.env
+    ports:
+      - "${DJANGO_PORT:-8002}:8002"
+    # volumes:
+    #   - ../../django-demo:/app
