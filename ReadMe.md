@@ -44,6 +44,7 @@ cd PySpringPad
 
 # copy env template (edit ports/localization as needed)
 cp .env.example .env
+```
 
 Scaffold projects (if missing):
 
@@ -148,21 +149,14 @@ pyspringpad/
 
 #🗺 Roadmap
 
- Starter templates (flask-api, fastapi-rest, django-crm)
-
- Auth scaffolding (JWT/OAuth2, Django users)
-
- Databases (Postgres, Redis, SQLite dev mode)
-
- Background jobs (Celery, RQ, FastAPI workers)
-
- Internationalization (Flask-Babel, Django i18n)
-
- Deployment configs (Heroku, Docker Swarm, Kubernetes)
-
- Cookiecutter integration for interactive scaffolding
-
- PySpring layer: config-driven launch experience, similar to Spring Boot
+    - Starter templates (flask-api, fastapi-rest, django-crm)
+    - Auth scaffolding (JWT/OAuth2, Django users)
+    - Databases (Postgres, Redis, SQLite dev mode)
+    - Background jobs (Celery, RQ, FastAPI workers)
+    - Internationalization (Flask-Babel, Django i18n)
+    - Deployment configs (AWS, Azure, GCP, Digital Ocean, Docker compose, Kubernetes)
+    - Cookiecutter integration for interactive scaffolding
+    - PySpring layer: config-driven launch experience, similar to Spring Boot
 
  🛡 Philosophy
 
@@ -177,7 +171,7 @@ Localization (LANG, LC_ALL, TZ) ensures predictable behavior across hosts/region
 Docker images are explicitly versioned, not tied to external defaults.
 
 This repo is not just a demo — it’s a time capsule and launch pad.
-Ten years from now, you’ll still be able to scaffold and run a Flask/Django/FastAPI app as it worked today.
+Ten years from now, you’ll still be able to scaffold and run a robust Flask/Django/FastAPI app as it worked today.
 
 🤝 Contributing
 
