@@ -117,7 +117,9 @@ Fully built images are exported to `./caches/images/built/`.
 
 #📂 Project structure
 
-```
+```text
+.
+
 pyspringpad/
 ├── flask-demo/          # Flask scaffold
 │   ├── app.py
@@ -141,6 +143,7 @@ pyspringpad/
 ├── Makefile             # all entrypoints
 ├── .env.example         # localization + ports
 └── ReadMe.md            # this doc
+
 ```
 
 #🗺 Roadmap
