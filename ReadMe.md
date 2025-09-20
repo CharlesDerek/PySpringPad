@@ -188,5 +188,5 @@ Contributions are welcome ❤️
 
 📜 License
 
-MIT
- © 2025 Your Name
+[MIT](https://github.com/CharlesDerek/PySpringPad/blob/main/LICENSE)
+ © 2025 Charles Derek
