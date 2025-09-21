@@ -33,6 +33,8 @@ def main():
         sys.exit(3)
 
     scripts_dir = Path("scripts")
+    venv_project_py = scripts_dir / "venv_project.py"
+    new_py = scripts_dir / "new.py"
 
     if target == "flask":
         proj = Path("flask-demo")
@@ -40,8 +42,8 @@ def main():
         entry = "app:app"
         reqs = choose_reqs(proj, mode)
 
-        # Ensure venv exists and is prepared by the existing helper script
-        run(["bash", str(scripts_dir / "venv_project.sh"), str(proj)])
+        # Ensure venv exists and is prepared by the Python helper
+        run([sys.executable, str(venv_project_py), str(proj)])
 
         venv_python = proj / ".venv" / "bin" / "python"
 
@@ -68,11 +70,11 @@ def main():
         entry = "main:app"
         reqs = choose_reqs(proj, mode)
 
-        # Create project if missing, using existing new.sh
+        # Create project if missing, using Python new.py
         if not proj.is_dir():
-            run(["bash", str(scripts_dir / "new.sh"), "fastapi"])
+            run([sys.executable, str(new_py), "fastapi"])
 
-        run(["bash", str(scripts_dir / "venv_project.sh"), str(proj)])
+        run([sys.executable, str(venv_project_py), str(proj)])
 
         venv_python = proj / ".venv" / "bin" / "python"
 
@@ -100,9 +102,9 @@ def main():
 
         # Create project if missing
         if not proj.is_dir():
-            run(["bash", str(scripts_dir / "new.sh"), "django"])
+            run([sys.executable, str(new_py), "django"])
 
-        run(["bash", str(scripts_dir / "venv_project.sh"), str(proj)])
+        run([sys.executable, str(venv_project_py), str(proj)])
 
         venv_dir = proj / ".venv" / "bin"
         venv_python = venv_dir / "python"
