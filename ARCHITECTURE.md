@@ -584,6 +584,7 @@ Scales from simple RBAC to attribute/risk-based access and step-up MFA, with cle
 
 Minimal Code Hook (example, FastAPI)
 
+```
 from security.middleware import api_pep
 from security.context import build_request_context
 from security.pdp import evaluate
@@ -597,6 +598,8 @@ async def guard_request(request, call_next):
     if decision.action == "require_mfa":
         return JSONResponse({"mfa": "required"}, status_code=401)
     return await call_next(request)
+```
+
 
 
 ---
