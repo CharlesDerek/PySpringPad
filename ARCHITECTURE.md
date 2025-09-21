@@ -6,7 +6,7 @@ This system is a user-declared build engine that produces a polished, production
 
 User-Driven (no auto-guessing): The engine does not choose for you; it enforces compatibility and best practices for your selections.
 
-Stage Pipeline: Each stage constrains the next (Paradigm → Architecture → Stack → Infra → Objects → Enhancements → Packaging → (optional) C++).
+Stage Pipeline: Each stage constrains the next (Paradigm → Architecture → Stack → Infra → Objects → Enhancements → Packaging → Compilation(s) → Network-Configurations → Test(s) → Runtime(s)
 
 Object Graph: Applications are defined as typed objects (API, Backend, Frontend, External, etc.) with nested capabilities (e.g., CRUD, Auth, SSO, MFA, caching).
 
@@ -39,7 +39,7 @@ Stages (Deterministic Pipeline)
 7. Packaging: Docker/Compose, CI/CD, Make targets, Helm (optional)
 
 
-8. Language Target (optional): transpile selected modules to C++ with appropriate libs
+8. Language Target (optional): transpile selected modules to appropriate compiled builds with appropriate libs, etc.
 
 
 
