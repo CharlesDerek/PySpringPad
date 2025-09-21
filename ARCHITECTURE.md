@@ -353,3 +353,250 @@ This dual approach means the system can serve both:
 
 
 2. Teams that prefer conventions or guided scaffolding with best-practice defaults.
+
+
+---
+
+Identity- & State-Aware Security (Next-Gen Firewall–Inspired)
+
+Goal
+
+Provide L7, identity-aware, policy-driven protection analogous to a Next Generation Firewall (NGFW), but embedded in the generated app/platform. Policies are declarative, enforced by Policy Enforcement Points (PEPs) at your API/UI/Job boundaries, with decisions made by a Policy Decision Point (PDP) using user/device/session context. Works in stateless (JWT/OIDC) and stateful (server sessions, device posture, risk score) modes.
+
+
+---
+
+Components
+
+1) Policy Decision Point (PDP)
+
+Evaluates RBAC/ABAC rules and risk signals (IP reputation, device posture, geo-velocity).
+
+Consumes identity claims (OIDC/SAML), session data, and request attributes.
+
+Exposed as a library (security.pdp) with a sidecar option for out-of-process evaluation.
+
+
+2) Policy Enforcement Points (PEPs)
+
+API PEP: framework middleware (Flask/FastAPI/Django) guarding every route/resource.
+
+Frontend PEP: React guards for routes/components; mirrors server decisions (defense-in-depth).
+
+Job/Queue PEP: validates producer/consumer identities and message scopes.
+
+Data PEP (optional): guards DAO/repository calls for row/field-level security.
+
+
+3) Context Providers
+
+Identity: JWT/OIDC tokens, SAML assertions, API keys, service accounts.
+
+Session (stateful): Redis-backed session with rolling expiry, device binding, MFA state.
+
+Signals: rate metrics, anomaly flags, IP/ASN intel, device posture, time-of-day.
+
+
+4) Policy Store & DSL
+
+Versioned policy bundles (YAML/JSON) kept under security/policies/.
+
+Supports RBAC, ABAC (attributes on user/resource/environment), rate quotas, geo/time fences, and step-up MFA.
+
+
+5) Telemetry & Audit
+
+Structured logs (PEP allow/deny, reasons), metrics (allow/deny counts, p99 latency), traces.
+
+Tamper-evident audit trail with hash chaining (optional).
+
+
+
+---
+
+Stateless vs. Stateful Modes
+
+Stateless: Verify JWT/OIDC per request; embed roles/attrs in claims; optional detached token introspection.
+
+Pros: horizontal scale, minimal server memory.
+
+Cons: limited revocation/restriction without short TTL or introspection.
+
+
+Stateful: Server-side session (Redis) contains risk score, device fingerprint, consent/MFA state, recent anomalies.
+
+Pros: fine-grained revocation, adaptive policies, richer context.
+
+Cons: needs shared store, adds complexity.
+
+
+
+You can enable either or both (stateless primary with stateful augment for high-risk zones).
+
+
+---
+
+Declarative Manifest Additions
+
+security:
+  mode: mixed            # stateless | stateful | mixed
+  identity:
+    providers: [oidc, saml]   # plus: local, api_key, mtls
+    mfa: [totp, webauthn]
+  policies:
+    bundles:
+      - base
+      - finance_strict
+  dlp:
+    enabled: true
+    detectors: [pii_email, pii_ssn, cc_pan]
+  waf:
+    enabled: true
+    ruleset: baseline     # app-layer checks, SSRF/SQLi/NoSQLi patterns
+  rate_limits:
+    default: { window: 60s, max: 600 }
+    per_route:
+      /api/v1/users: { window: 60s, max: 120 }
+  anomaly:
+    geo_velocity: enabled
+    ip_reputation: enabled
+
+Object-Level Security Declarations
+
+objects:
+  - type: api.resource
+    name: Users
+    entity: User
+    version: v1
+    crud:
+      create: { enabled: true, policy: role>=admin }
+      read:   { enabled: true, policy: abac(user.id == ctx.user_id or role>=staff) }
+      update: { enabled: true, policy: step_up_mfa(role>=admin) }
+      delete: { enabled: restricted, policy: risk_score<50 and role>=admin }
+    guards:
+      rate_limit: medium
+      ip_allowlist: [office_cidr, vpn]
+      require_signed_request: false
+
+  - type: external.auth
+    name: OrgLogin
+    providers: [oidc, saml]
+    mfa: webauthn
+    session:
+      max_age: 8h
+      rolling: true
+      bind_device: true
+
+Policy DSL (Example Bundle)
+
+bundle: finance_strict
+rules:
+  - id: FIN-READ
+    effect: allow
+    when: resource.type == "Invoice" and (
+            subject.role in ["admin","finance"] or
+            resource.owner_id == subject.sub
+          )
+
+  - id: FIN-EXPORT
+    effect: deny
+    when: action == "export" and env.risk_score >= 70
+
+  - id: STEP-UP
+    effect: require_mfa
+    when: action in ["delete","elevate_role"] and subject.mfa_verified == false
+
+
+---
+
+Enforcement Flow
+
+flowchart LR
+  A[Request arrives] --> B[Identity Extractor (JWT/OIDC/SAML)]
+  B --> C[Context Build (session, risk, device)]
+  C --> D[API PEP middleware]
+  D --> E[PDP evaluate policies (RBAC/ABAC/DLP/WAF/Rate)]
+  E -->|allow| F[Handler/Controller]
+  E -->|require_mfa| G[MFA Flow]
+  E -->|deny| H[Block + Audit]
+
+WAF/DLP run as fast pre-filters (pattern & content checks) before/alongside PDP.
+
+Rate limits enforced per identity, route, and optional IP/device key.
+
+Step-up prompts are automatic when PDP returns require_mfa.
+
+
+
+---
+
+Integration Points (Generated Code)
+
+Flask/FastAPI/Django: drop-in middleware: security.middleware.api_pep.
+
+Repositories: optional security.middleware.data_pep for row/field-level ABAC.
+
+Frontend: React Guard HOC + hooks mirroring PDP decisions and feature flags.
+
+Jobs/Queues: decorators @guarded(action="consume", resource="QueueX").
+
+Config: policies in security/policies/*.yaml; mode toggles via env (12-factor friendly).
+
+
+
+---
+
+Performance & Optional Native Path
+
+Hot paths (WAF matchers, DLP detectors, ABAC evaluator) can be C++ modules behind a stable Python interface.
+
+Token verification and rate limiting use O(1) Redis ops with Lua scripts when stateful.
+
+PDP caches compiled policies; supports incremental reload on bundle change.
+
+
+
+---
+
+Testing & Audit
+
+Generated security test suite per object (allow/deny/require_mfa cases).
+
+Replayable audit: each decision logs inputs, rule hits, and outcome; hash-chained per request for tamper evidence.
+
+Policy diff in CI to require review for changes impacting critical routes.
+
+
+
+---
+
+Why This Matters
+
+Moves security from ad-hoc middleware to a first-class, declarative system.
+
+Gives you NGFW-like identity & context awareness directly at the app layer (L7), not only at the edge.
+
+Scales from simple RBAC to attribute/risk-based access and step-up MFA, with clear auditability.
+
+
+
+---
+
+Minimal Code Hook (example, FastAPI)
+
+from security.middleware import api_pep
+from security.context import build_request_context
+from security.pdp import evaluate
+
+@app.middleware("http")
+async def guard_request(request, call_next):
+    ctx = await build_request_context(request)  # identity + session + signals
+    decision = await evaluate(ctx)              # RBAC/ABAC/WAF/Rate/DLP
+    if decision.action == "deny":
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if decision.action == "require_mfa":
+        return JSONResponse({"mfa": "required"}, status_code=401)
+    return await call_next(request)
+
+
+---
